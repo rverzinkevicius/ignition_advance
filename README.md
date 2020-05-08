@@ -16,4 +16,4 @@ Code will calculate time between pickup coil signal and actual spark time and wi
 
 RPM is also displayed.
 
-![img](https://raw.githubusercontent.com/rverzinkevicius/ignition_advance/master/atl_idle.jpg)
+![img](at_idle.jpg)
