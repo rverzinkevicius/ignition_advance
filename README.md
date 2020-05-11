@@ -17,3 +17,10 @@ Code will calculate time between pickup coil signal and actual spark time and wi
 RPM is also displayed.
 
 ![img](at_idle.jpg)
+
+As esp8266 gpio sensitivity is different compared to ECU, accuracy will suffer a bit. Pickup coil signal at idle is raising for about 1ms till it reaches bit above 2V. Esp8266 reads high at lower voltage than 2V, so for error i assume that esp8266 reads high about 1/4-1/3ms before ECU does. This translates to 2-3 degrees of timing advance error, which i observed. So instead of actual 60 degress pickup coil signal advance, i am setting it to 57-58.
+
+![img](IMG_20191208_120550.jpg)
+
+
+
