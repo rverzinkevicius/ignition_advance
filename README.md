@@ -18,8 +18,7 @@ RPM is also displayed.
 
 ![img](at_idle.jpg)
 
-As esp8266 gpio sensitivity is different compared to ECU, accuracy will suffer a bit. Pickup coil signal at idle is raising for about 1ms till it reaches bit above 2V. Esp8266 reads high at lower voltage than 2V, so for error i assume that esp8266 reads high about 1/4-1/3ms before ECU does. This translates to 2-3 degrees of timing advance error.
-Doublechecked specs of engine and actually this assumption is wrong. Displayed 17 degrees advance is correct according to scooter manual, but i would still give at least 1 degree for error.
+Pickup coil signal:
 
 ![img](IMG_20191208_120550.jpg)
 
