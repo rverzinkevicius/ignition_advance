@@ -6,8 +6,8 @@
 
 GButton butt1(D7);
 
-//SSD1306Wire  display(0x3c, D2, D1);  //D2=SDK  D1=SCK
-SH1106Wire  display(0x3c, D2, D1);  //D2=SDK  D1=SCK
+//SSD1306Wire  display(0x3c, D2, D1);  //D2=SDA  D1=SCL
+SH1106Wire  display(0x3c, D2, D1);  //D2=SDA  D1=SCL
 
 int pickup_advance = 60; //degrees BTDC when pickup generates pulse
 unsigned long starttime= 0;
@@ -20,7 +20,10 @@ int advance2=0;
 int advance3=0;
 int counter_advance=0;
 volatile bool advance_updated = false;
+volatile bool spark = false;
 volatile unsigned long duration_advance=1;
+
+int ledpin = D8;
 
 int rpmpin = D6;
 int rpm = 1;
@@ -57,6 +60,7 @@ void setup()   {
 
   pinMode(rpmpin,INPUT);
   pinMode(sparkpin,INPUT);
+  pinMode(ledpin,OUTPUT);
 
   attachInterrupt(digitalPinToInterrupt(sparkpin), advance_counter, RISING);
 
@@ -100,6 +104,14 @@ if (butt1.isStep()) {
   if (pickup_advance>359)
   {
     pickup_advance=0;
+  }
+
+if (spark) 
+  {
+digitalWrite(ledpin,HIGH);
+delayMicroseconds(80);
+digitalWrite(ledpin,LOW);
+spark = false;
   }
 
  if (digitalRead(rpmpin) == 1 && previous_rpm == 0)
@@ -232,10 +244,8 @@ yield();
 ICACHE_RAM_ATTR void advance_counter()
 {
   if (!advance_updated) {
-duration_advance = micros()-elapsed_prev_rpm;
-advance_updated = true;
+   duration_advance = micros()-elapsed_prev_rpm;
+   advance_updated = true;
+   spark = true;
   }
 }
-
-
-
