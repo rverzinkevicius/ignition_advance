@@ -108,8 +108,8 @@ if (butt1.isStep()) {
 
 if (spark) 
   {
-digitalWrite(ledpin,HIGH);
-delayMicroseconds(80);
+//digitalWrite(ledpin,HIGH);
+delayMicroseconds(120);
 digitalWrite(ledpin,LOW);
 spark = false;
   }
@@ -246,6 +246,7 @@ ICACHE_RAM_ATTR void advance_counter()
   if (!advance_updated) {
    duration_advance = micros()-elapsed_prev_rpm;
    advance_updated = true;
+   digitalWrite(ledpin,HIGH);
    spark = true;
   }
 }
