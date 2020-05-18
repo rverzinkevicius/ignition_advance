@@ -5,6 +5,9 @@ Uses D1 Mini ESP8266 board and SH1106 display (D2=SDA, D1=SCL, 3V3=VCC, GND=GND)
 
 Hook up D6 to pickup coil signal, GND to ground and D5 just simple wire going near (or few turns around) spark plug wire. Button between D7 and GND.
 
+Schematic (i think 1N400x diode should work instead of 1N34A):
+![img](TL.JPG)
+
 Spark pickup:
 ![img](spark_pickup.jpg)
 
