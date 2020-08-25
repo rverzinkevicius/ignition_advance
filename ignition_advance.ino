@@ -3,6 +3,9 @@
 //#include "SSD1306Wire.h"  //for 0.96" SSD1306 OLED display
 #include <SH1106Wire.h>     //for 1.3" SH1106 OLED display
 #include "GyverButton.h"
+#include "GyverFilters.h"
+
+GFilterRA testFilterRA;
 
 GButton butt1(D7);
 
@@ -28,22 +31,31 @@ int ledpin = D8;
 int rpmpin = D6;
 int rpm = 1;
 int rpm_a = 1;
+int rpm1 = 1;
 int rpm2 = 1;
 int rpm3 = 1;
 int counter_rpm = 0;
+int present_rpm = 0;
 int previous_rpm = 0;
 float rpmai = 1;
-unsigned long duration_rpm = 1;
 unsigned long elapsedt_rpm = 1;
 unsigned long elapsed_prev_rpm = 1;
+unsigned long last_update_rpm=0;
 unsigned long last_show_rpm=0;
 unsigned long cur = 0;
 unsigned long del= 0;
 unsigned long del2= 0;
+unsigned long duration_rpmTmp=0;
+volatile unsigned long duration_rpm=0;
+volatile unsigned long last_rpm=0;
 bool rpmflag=true;
 bool rpmupdated=false;
 
-
+const int numReadings = 4;
+int readings[numReadings];
+int readIndex = 0;
+int total = 0;
+int average = 0;
 
 void setup()   {   
 
@@ -52,6 +64,8 @@ void setup()   {
   delay(300);
   
   Serial.begin(15200);
+
+  testFilterRA.setCoef(0.5);
 
   display.init();
   display.flipScreenVertically();  
@@ -64,7 +78,13 @@ void setup()   {
   pinMode(sparkpin,INPUT);
   pinMode(ledpin,OUTPUT);
 
+  attachInterrupt(digitalPinToInterrupt(rpmpin), rpm_counter, RISING); 
   attachInterrupt(digitalPinToInterrupt(sparkpin), advance_counter, RISING);
+  
+  for (int thisReading = 0; thisReading < numReadings; thisReading++) 
+   {
+    readings[thisReading] = 0;
+   }
 
   EEPROM.begin(10);
   EEPROM.get(3,pickup_advance);  
@@ -116,65 +136,41 @@ digitalWrite(ledpin,LOW);
 spark = false;
   }
 
- if (digitalRead(rpmpin) == 1 && previous_rpm == 0)
-  {
-  previous_rpm = 1;
-  duration_rpm = elapsedt_rpm - elapsed_prev_rpm;
-  rpmupdated=true;
-  elapsed_prev_rpm  = micros();    
-  advance_updated = false;
-  }
-
- if (digitalRead(rpmpin) == 1 && previous_rpm == 1)
-  {
-  previous_rpm = 1;       
-  }
-
- if (digitalRead(rpmpin) == 0 && previous_rpm == 1)
-  {
-  cur=micros();
-  del=cur - elapsed_prev_rpm;
-   if (del < 5000) 
-    {
-    previous_rpm=1;
-    }
-    else 
-     {
-     previous_rpm = 0;     
-     }
-  }
-
- if (digitalRead(rpmpin) == 0 && previous_rpm == 0)
-  {
-  previous_rpm = 0;
-  elapsedt_rpm = micros(); 
-  del2=elapsedt_rpm - elapsed_prev_rpm;
-  if (del2>2000000)
-   {
-   rpmflag=true;
-   }
-  }
+ if ((millis()-last_update_rpm) >700)
+{
+rpmflag=true;
+}
  
- 
+  
+  
 
 if (rpmupdated){
- rpmai = 60000000/duration_rpm;
+  
+  noInterrupts();
+  rpmupdated=false;
+  duration_rpmTmp=duration_rpm;
+  last_rpmTMP = last_rpm;
+  interrupts();
+  
+ rpmai = 60000000/duration_rpmTmp;
  rpm = round (rpmai);
- rpmupdated=false;
-
- advance= pickup_advance - ((duration_advance * 360) / duration_rpm );
- 
- if ( ((rpm_a-30) < rpm) && (rpm < (rpm_a+30)))
-  {
-  rpm_a = rpm;
-  rpm3 = rpm3 + rpm;
-  counter_rpm = counter_rpm + 1;
+  
+  total = total - readings[readIndex];
+  readings[readIndex] = rpm;
+  total = total + readings[readIndex];
+  readIndex = readIndex + 1;
+  if (readIndex >= numReadings)
+      {
+       readIndex = 0;
+       }
   }
-  else
-   {
-   rpm_a=rpm;
-   }
 
+rpm = total / numReadings;
+
+rpm=testFilterRA.filtered(float(rpm));
+
+ advance= pickup_advance - ((duration_advance * 360) / duration_rpmTmp );
+ 
 
  if ( ((advance_a-5) < advance) && (advance < (advance_a+5)))
   {
@@ -186,16 +182,15 @@ if (rpmupdated){
    {
    advance_a=advance;
    }  
+
+  last_update_rpm=millis();
+  
 }
 
  if ((millis()-last_show_rpm) >300)  //refresh rate
-  {
- if (counter_rpm>0){   
-  rpm2=rpm3/counter_rpm;
-  rpm2=((rpm2+5)/10)*10;  //round to tens
-  counter_rpm=0;
-  rpm3=0;
- }
+
+   rpm2=((rpm+5)/10)*10;
+
 
 if (counter_advance>0){   
   advance2=advance3/counter_advance;
@@ -250,9 +245,22 @@ yield();
 ICACHE_RAM_ATTR void advance_counter()
 {
   if (!advance_updated) {
-   duration_advance = micros()-elapsed_prev_rpm;
+   duration_advance = micros()-last_rpm;
    advance_updated = true;
    digitalWrite(ledpin,HIGH);
    spark = true;
   }
 }
+
+
+ICACHE_RAM_ATTR void rpm_counter()   //ISR for RPM
+{
+ if ((micros()-last_rpm)>5900)   //debounce signal. Take MAX RPM of engine and calculate time in micro seconds for full revolution: 
+ {                               //   60 000 000/(max_RPM+couple_hundred_for_error)  ->  60 000 000 / (10 000 + 200) = 5882 -> rounded it to 5900
+  duration_rpm = micros()-last_rpm;
+  last_rpm = micros();
+  rpmupdated=true;
+  advance_updated = false;
+ }
+}
+
