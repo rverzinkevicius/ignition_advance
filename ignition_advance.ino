@@ -36,6 +36,7 @@ float rpmai = 1;
 unsigned long last_update_rpm=0;
 unsigned long last_show_rpm=0;
 unsigned long duration_rpmTmp=0;
+unsigned long last_rpmTmp=0;
 volatile unsigned long duration_rpm=0;
 volatile unsigned long last_rpm=0;
 bool rpmflag=true;
@@ -92,11 +93,15 @@ starttime=millis();
 void loop() 
  {
 
-if (((millis()-starttime)>60000) && (!saved)){
+if (!saved)
+{  
+ if ((millis()-starttime)>60000)
+ {
   EEPROM.begin(10);
   EEPROM.put(3,pickup_advance);  
   EEPROM.commit();
   saved=true;
+ }
 }
 
  butt1.tick(); 
@@ -139,7 +144,7 @@ if (rpmupdated){
   noInterrupts();
   rpmupdated=false;
   duration_rpmTmp=duration_rpm;
-  last_rpmTMP = last_rpm;
+  last_rpmTmp = last_rpm;
   interrupts();
   
  rpmai = 60000000/duration_rpmTmp;
@@ -199,6 +204,8 @@ if (counter_advance>0){
     String advance1 = String (advance2);
     String pickup_advance1 = String (pickup_advance);
    
+  Serial.print(rpm);
+  Serial.print(",");
   Serial.print(rpm1);
   Serial.print(",");
   Serial.println(advance1);
