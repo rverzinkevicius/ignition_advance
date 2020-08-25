@@ -50,6 +50,8 @@ void setup()   {
   WiFi.mode( WIFI_OFF );
   WiFi.forceSleepBegin();
   delay(300);
+  
+  Serial.begin(15200);
 
   display.init();
   display.flipScreenVertically();  
@@ -183,7 +185,7 @@ if (rpmupdated){
   else
    {
    advance_a=advance;
-   }
+   }  
 }
 
  if ((millis()-last_show_rpm) >300)  //refresh rate
@@ -211,6 +213,10 @@ if (counter_advance>0){
     String rpm1 = String (rpm2);
     String advance1 = String (advance2);
     String pickup_advance1 = String (pickup_advance);
+   
+  Serial.print(rpm1);
+  Serial.print(",");
+  Serial.println(advance1);
 
 
     display.clear();
