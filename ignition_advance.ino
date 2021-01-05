@@ -122,7 +122,13 @@ if (butt1.isStep()) {
   {
     pickup_advance=0;
   }
+  
+  if (pickup_advance<0)
+  {
+    pickup_advance=0;
+  }
 
+  
 if (spark) 
   {
 //digitalWrite(ledpin,HIGH);
