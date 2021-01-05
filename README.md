@@ -11,7 +11,7 @@ Schematic (i think 1N400x diode should work instead of 1N34A):
 Spark pickup:
 ![img](spark_pickup.jpg)
 
-Short press button increase pickup coil advance by 1 degree, long press decreeses by 1 degree. After one minute of changing this value, it is saved to memory and will be remembered during reboots.
+Short press button increases pickup coil advance by 1 degree, long press decreeses by 1 degree. After one minute of changing this value, it is saved to memory and will be remembered during reboots.
 
 You need to know how many degrees BTDC pickup coil generates pulse. On my Piaggio LEADER 125 cc 2V engine it was about 60 degrees BTDC.
 
