@@ -54,7 +54,7 @@ void setup()   {
   WiFi.forceSleepBegin();
   delay(300);
   
-  Serial.begin(15200);
+  Serial.begin(115200);
 
   testFilterRA.setCoef(0.5);
 
